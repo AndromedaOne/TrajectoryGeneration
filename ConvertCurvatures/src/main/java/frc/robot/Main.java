@@ -7,6 +7,7 @@ package frc.robot;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +16,8 @@ import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
 
-import org.json.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,7 +25,7 @@ import org.json.simple.parser.JSONParser;
 public final class Main {
   private Main() {}
   private static Trajectory trajectory;
-  private static String path = "/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json";
+  private static final String path = "/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json";
   
   public static void main(String... args) {
     System.out.println("Hello World");
@@ -97,7 +96,7 @@ public final class Main {
     }catch(IOException e) {
       e.printStackTrace();
     }
-
+    Trajectory betterTrajectory = null;
     try{
       FileWriter csvWriter = new FileWriter("GeneratedVelocities.csv");
       csvWriter.append("Time, OriginalLeftVelocity, OriginalRightVelocity, NewLeftVelocity, NewRightVelocity\n");
@@ -117,7 +116,7 @@ public final class Main {
         count2++;
         betterStates.add(betterState);
       }
-      Trajectory betterTrajectory = new Trajectory(betterStates);
+      betterTrajectory = new Trajectory(betterStates);
       for(double t = 0.0; t < trajectory.getTotalTimeSeconds(); t += 0.02){
         var targetWheelSpeeds =
         kinematics.toWheelSpeeds(
@@ -137,6 +136,14 @@ public final class Main {
       e.printStackTrace();
     }
     
+    String[] pathToOriginalFile = path.split("/");
+    String nameOfFile = pathToOriginalFile[pathToOriginalFile.length - 1];
+    String dest = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/" + nameOfFile;
+    try{
+      TrajectoryUtil.toPathweaverJson(betterTrajectory, Path.of(dest));
+    }catch(Exception e) {
+      e.printStackTrace();
+    }
     
 
   }
