@@ -60,6 +60,11 @@ dependencies {
     simulation wpi.deps.sim.driverstation(wpi.platforms.desktop, false)
 
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.4'
+
+
     // Websocket extensions require additional configuration.
     // simulation wpi.deps.sim.ws_server(wpi.platforms.desktop, false)
     // simulation wpi.deps.sim.ws_client(wpi.platforms.desktop, false)
