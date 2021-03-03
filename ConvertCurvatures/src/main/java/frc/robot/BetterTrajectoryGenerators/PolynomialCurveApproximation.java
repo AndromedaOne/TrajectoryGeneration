@@ -11,7 +11,9 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
-
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
@@ -22,6 +24,7 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
     private Trajectory m_trajectory;
     protected PolynomialFunction m_xApprox;
     protected PolynomialFunction m_yApprox;
+    public static final double ORDER_FACTOR = 11;
     public PolynomialCurveApproximation(List<State> states) {
         super(states);
         m_trajectory = new Trajectory(m_states);
@@ -45,20 +48,21 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 			@Override
 			public double get(int index) {
 				return m_states.get(index).poseMeters.getY();
-			}
+            }
 
         };
         UnivariateFunction yValues = new UnivariateFunction() {
 
 			@Override
 			public double value(double t) {
-				// TODO Auto-generated method stub
 				return m_trajectory.sample(t).poseMeters.getY();
 			}
 
         };
         int numberOfDirectionChanges = getNumberOfDirectionChanges(yValues);
-        return getPolynomialApproximation(yGetter, 2*(numberOfDirectionChanges + 3), false);
+        System.out.println("For Y: ");
+        //return getPolynomialApproximation(yGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), true);
+        return getPolynomialApproximation(yGetter, (int)15, true);
     }
 
     private PolynomialFunction getXPolynomialApproximation() {
@@ -74,21 +78,22 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 
 			@Override
 			public double value(double t) {
-				// TODO Auto-generated method stub
 				return m_trajectory.sample(t).poseMeters.getX();
 			}
 
         };
         int numberOfDirectionChanges = getNumberOfDirectionChanges(xValues);
-        return getPolynomialApproximation(xGetter, 2*(numberOfDirectionChanges + 3), true);
+        System.out.println("For X: ");
+        //return getPolynomialApproximation(xGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), true);
+        return getPolynomialApproximation(xGetter, (int)12, true);
     }
 
     private PolynomialFunction getPolynomialApproximation(ValueGetter valueGetter, int order, boolean debugMode) {
 
-        int orderOfPolynomialApproximation = order; 
         if(debugMode) {
-            System.out.println(order);
+            System.out.println("order: " + order);
         }
+        int orderOfPolynomialApproximation = order; 
         double[] coefficients = new double[orderOfPolynomialApproximation + 1];
         coefficients[0] = valueGetter.get(0);
         coefficients[1] = 0;
@@ -115,18 +120,27 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 
         double[] outputData = new double[m_states.size()];
         for(int i = 0; i < outputData.length; i++) {
-            outputData[i] = valueGetter.get(i) - coefficients[0] - penUltimateThetaCoefficients[0] - finalThetaCoefficients[0];
+            outputData[i] = valueGetter.get(i) - coefficients[0] 
+                - penUltimateThetaCoefficients[0] * Math.pow(m_states.get(i).timeSeconds, orderOfPolynomialApproximation - 1) 
+                - finalThetaCoefficients[0] * Math.pow(m_states.get(i).timeSeconds, orderOfPolynomialApproximation);
         }
 
-        WeightedObservedPoints obs = new WeightedObservedPoints();
-        int count = 0;
-        for(State state : m_states) {
-            obs.add(Math.pow(state.timeSeconds, 2), outputData[count]);
-            count++;
+        double[][] inputData = new double[m_states.size()][orderOfPolynomialApproximation - 3];
+
+        for(int i = 0; i < inputData.length; i++) {
+            for(int j = 0; j < inputData[i].length; j++) {
+                inputData[i][j] = Math.pow(m_states.get(i).timeSeconds, j+2) 
+                    + penUltimateThetaCoefficients[j+1] * Math.pow(m_states.get(i).timeSeconds, orderOfPolynomialApproximation - 1)
+                    + finalThetaCoefficients[j+1] * Math.pow(m_states.get(i).timeSeconds, orderOfPolynomialApproximation);
+            }
         }
-        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(orderOfPolynomialApproximation - 4);
-        double[] coeffForMiddleParameters = fitter.fit(obs.toList());
-        count = 2;
+
+        RealMatrix inputMatrix = MatrixUtils.createRealMatrix(inputData);
+        RealMatrix outputVector = MatrixUtils.createColumnRealMatrix(outputData);
+        RealMatrix inverseMTransposeM = new LUDecomposition(inputMatrix.transpose().multiply(inputMatrix)).getSolver().getInverse();
+        RealMatrix middleThetas = inverseMTransposeM.multiply(inputMatrix.transpose().multiply(outputVector));
+        double[] coeffForMiddleParameters = middleThetas.getColumn(0);
+        int count = 2;
         for(double coeff : coeffForMiddleParameters) {
             coefficients[count] = coeff;
             count++;

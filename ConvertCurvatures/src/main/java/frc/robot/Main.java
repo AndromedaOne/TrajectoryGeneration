@@ -26,7 +26,7 @@ import org.json.simple.parser.JSONParser;
 public final class Main {
   private Main() {
   }
-  public static final String path = "/Users/seandoyle/test/PathWeaver/output/PerfectCircle.wpilib.json";
+  public static final String path = "/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json";
   private static final String[] pathToOriginalFile = path.split("/");
   private static final String nameOfFile = pathToOriginalFile[pathToOriginalFile.length - 1];
   public static final String dest = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/" + nameOfFile;

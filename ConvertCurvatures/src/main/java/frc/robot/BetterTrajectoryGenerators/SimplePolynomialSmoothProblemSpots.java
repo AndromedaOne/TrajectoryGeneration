@@ -7,12 +7,11 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
 
-public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
-    
-    public SimplePolynomialBetterStates(List<State> states) {
+public class SimplePolynomialSmoothProblemSpots extends PolynomialCurveApproximation {
+    public SimplePolynomialSmoothProblemSpots(List<State> states) {
         super(states);
     }
-
+    
     protected List<State> generateBetterStates() {
         List<State> betterStates = new ArrayList<State>();
         PolynomialFunction xDerivative = m_xApprox.polynomialDerivative();
@@ -24,7 +23,7 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
         double previousCurvature = 0;
         for(State state : m_states) {
             double newCurvature = 0;
-            if(count == 0 || count == m_states.size() - 1) {
+            if(count == 0 || count == m_states.size() - 1 || Math.abs(state.curvatureRadPerMeter) > 1.0e-6) {
                 newCurvature = state.curvatureRadPerMeter;
             }else{
                 double time = state.timeSeconds;
@@ -33,12 +32,9 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
                 double dxSquared = xSecondDerivative.value(time);
                 double dySquared = ySecondDerivative.value(time);
                 newCurvature = CalculatedCurvatures.getCurvature(dx, dy, dxSquared, dySquared);
-                if(Math.abs(state.curvatureRadPerMeter) > 1.0e-6) {
-                    newCurvature *= Math.signum(state.curvatureRadPerMeter);
-                }else {
-                    newCurvature *= Math.signum(previousCurvature);
-                }
-            }   
+                newCurvature *= Math.signum(previousCurvature);
+            }
+             
             State betterState = new State(
                 state.timeSeconds,
                 state.velocityMetersPerSecond,
