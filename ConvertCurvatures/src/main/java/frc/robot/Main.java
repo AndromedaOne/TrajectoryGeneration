@@ -41,6 +41,7 @@ public final class Main {
     List<State> betterJsonPathPoints = getBetterPathPoints(jsonPathPoints);
     Trajectory betterTrajectory = new Trajectory(betterJsonPathPoints);
     
+    System.out.println("New Logs!");
     Logging.createCurvaturesCSV("GeneratedCurvatures.csv", jsonPathPoints, betterJsonPathPoints);
     Logging.createVelocitiesCSV("GeneratedVelocities.csv", trajectory, betterTrajectory);
     Logging.createXYCSV("Trajectory.csv", trajectory);

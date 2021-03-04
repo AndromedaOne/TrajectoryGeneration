@@ -94,7 +94,7 @@ public class Logging {
           e.printStackTrace();
       }
     }
-    public static void compareGeneratedPolynomialForY(String name, List<State> states, PolynomialFunction polynomial) {
+    public static void compareGeneratedPolynomialForY(String name, List<State> states, UnivariateFunction polynomial) {
       try {
         FileWriter csvWriter = new FileWriter(name);
         csvWriter.append("Time, OriginalValue, NewValue \n");
@@ -108,7 +108,7 @@ public class Logging {
       }
     }
 
-    public static void compareGeneratedPolynomialForX(String name, List<State> states, PolynomialFunction polynomial) {
+    public static void compareGeneratedPolynomialForX(String name, List<State> states, UnivariateFunction polynomial) {
       try {
         FileWriter csvWriter = new FileWriter(name);
         csvWriter.append("Time, OriginalValue, NewValue \n");

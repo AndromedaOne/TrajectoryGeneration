@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
 
 public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
     
+    public static final int pointsOffEndsToRemove = 1;
     public SimplePolynomialBetterStates(List<State> states) {
         super(states);
     }
@@ -19,12 +20,13 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
         PolynomialFunction yDerivative = m_yApprox.polynomialDerivative();
         PolynomialFunction xSecondDerivative = xDerivative.polynomialDerivative();
         PolynomialFunction ySecondDerivative = yDerivative.polynomialDerivative();
+        
 
         int count = 0;
         double previousCurvature = 0;
         for(State state : m_states) {
             double newCurvature = 0;
-            if(count == 0 || count == m_states.size() - 1) {
+            if(count < pointsOffEndsToRemove || count > m_states.size() - 1 - pointsOffEndsToRemove ) {
                 newCurvature = state.curvatureRadPerMeter;
             }else{
                 double time = state.timeSeconds;
@@ -37,6 +39,10 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
                     newCurvature *= Math.signum(state.curvatureRadPerMeter);
                 }else {
                     newCurvature *= Math.signum(previousCurvature);
+                }
+
+                if(Math.abs(state.curvatureRadPerMeter - previousCurvature) < Math.abs(newCurvature - previousCurvature)) {
+                    newCurvature = state.curvatureRadPerMeter;
                 }
             }   
             State betterState = new State(
@@ -52,5 +58,16 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
         }
 
         return betterStates;
+    }
+
+    private boolean changeInCurvatureIsOK(State currentState, State previousState) {
+        double curvatureRateOfChange = (currentState.curvatureRadPerMeter - previousState.curvatureRadPerMeter) / (currentState.timeSeconds - previousState.timeSeconds);
+        boolean changeInCurvatureIsOK = Math.abs(curvatureRateOfChange) < 0.1;
+        if(changeInCurvatureIsOK) {
+            System.out.println(currentState.timeSeconds);
+            System.out.println(curvatureRateOfChange);
+            System.out.println();
+        }
+        return changeInCurvatureIsOK;
     }
 }
