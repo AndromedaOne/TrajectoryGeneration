@@ -5,12 +5,16 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
+import frc.robot.Logging.Logging;
 
-public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
-    
+public class TranslatedPolynomialBetterStates extends PolynomialCurveApproximation {
+
     public static final int pointsOffEndsToRemove = 1;
-    public SimplePolynomialBetterStates(List<State> states) {
+
+    public TranslatedPolynomialBetterStates(List<State> states) {
         super(states);
     }
 
@@ -20,12 +24,12 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
         PolynomialFunction yDerivative = m_yApprox.polynomialDerivative();
         PolynomialFunction xSecondDerivative = xDerivative.polynomialDerivative();
         PolynomialFunction ySecondDerivative = yDerivative.polynomialDerivative();
-        
 
         int count = 0;
         double previousCurvature = 0;
-        for(State state : m_states) {
+        for (State state : m_states) {
             double newCurvature = 0;
+            Pose2d newPoint = state.poseMeters;
             if(count < pointsOffEndsToRemove || count > m_states.size() - 1 - pointsOffEndsToRemove ) {
                 newCurvature = state.curvatureRadPerMeter;
             }else{
@@ -41,15 +45,21 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
                     newCurvature *= Math.signum(previousCurvature);
                 }
 
+                double newX = m_xApprox.value(state.timeSeconds);
+                double newY = m_yApprox.value(state.timeSeconds);
+                double newRotation = Math.atan2(dy,  dx);
+                newPoint = new Pose2d(newX, newY, new Rotation2d(newRotation));
+
                 if(Math.abs(state.curvatureRadPerMeter - previousCurvature) < Math.abs(newCurvature - previousCurvature)) {
                     newCurvature = state.curvatureRadPerMeter;
+                    newPoint = state.poseMeters;
                 }
             }   
             State betterState = new State(
                 state.timeSeconds,
                 state.velocityMetersPerSecond,
                 state.accelerationMetersPerSecondSq,
-                state.poseMeters,
+                newPoint,
                 newCurvature
             );
             betterStates.add(betterState);
@@ -59,4 +69,5 @@ public class SimplePolynomialBetterStates extends PolynomialCurveApproximation {
 
         return betterStates;
     }
+    
 }

@@ -19,7 +19,7 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
     protected PolynomialFunction m_xApprox;
     protected PolynomialFunction m_yApprox;
     protected Trajectory m_trajectory;
-    public static final double ORDER_FACTOR = 8;
+    public static final double ORDER_FACTOR = 10;
     
     public PolynomialCurveApproximation(List<State> states) {
         super(states);

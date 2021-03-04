@@ -45,8 +45,10 @@ public final class Main {
     Logging.createCurvaturesCSV("GeneratedCurvatures.csv", jsonPathPoints, betterJsonPathPoints);
     Logging.createVelocitiesCSV("GeneratedVelocities.csv", trajectory, betterTrajectory);
     Logging.createXYCSV("Trajectory.csv", trajectory);
-    Logging.createXYCSV("NewTrajectory.csv", trajectory);
+    Logging.createXYCSV("NewTrajectory.csv", betterTrajectory);
     Logging.createTimeXYCSV("TimedTrajectory.csv", trajectory);
+    Logging.plotRotation("Rotation.csv", jsonPathPoints);
+    Logging.plotRotation("NewRotation.csv", betterJsonPathPoints);
     
     exportTrajectory(trajectory);
     

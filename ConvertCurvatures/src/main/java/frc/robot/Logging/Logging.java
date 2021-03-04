@@ -122,4 +122,18 @@ public class Logging {
       }
     }
 
+    public static void plotRotation(String name, List<State> states) {
+      try {
+        FileWriter csvWriter = new FileWriter(name);
+        csvWriter.append("Time, Rotation\n");
+        for (State state : states) {
+          csvWriter.append(state.timeSeconds + ", " + state.poseMeters.getRotation().getRadians() + "\n");
+        }
+        csvWriter.flush();
+        csvWriter.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
 }
