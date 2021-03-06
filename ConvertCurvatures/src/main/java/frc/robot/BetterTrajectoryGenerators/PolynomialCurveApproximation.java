@@ -19,7 +19,7 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
     protected PolynomialFunction m_xApprox;
     protected PolynomialFunction m_yApprox;
     protected Trajectory m_trajectory;
-    public static final double ORDER_FACTOR = 10;
+    public static final double ORDER_FACTOR = 12;
     
     public PolynomialCurveApproximation(List<State> states) {
         super(states);
@@ -42,9 +42,9 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
         ValueGetter yGetter = new ValueGetter() {
 
 			@Override
-			public double get(int index) {
-				return m_states.get(index).poseMeters.getY();
-            }
+			public double get(double time) {
+				return m_trajectory.sample(time).poseMeters.getY();
+			}
 
         };
         UnivariateFunction yValues = new UnivariateFunction() {
@@ -56,7 +56,6 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 
         };
         int numberOfDirectionChanges = getNumberOfDirectionChanges(yValues);
-        System.out.println("For Y: ");
         return getPolynomialApproximation(yGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), false);
     }
 
@@ -64,8 +63,8 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
         ValueGetter xGetter = new ValueGetter() {
 
 			@Override
-			public double get(int index) {
-				return m_states.get(index).poseMeters.getX();
+			public double get(double time) {
+				return m_trajectory.sample(time).poseMeters.getX();
 			}
 
         };
@@ -78,17 +77,15 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 
         };
         int numberOfDirectionChanges = getNumberOfDirectionChanges(xValues);
-        System.out.println("For X: ");
-        return getPolynomialApproximation(xGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), false);
+        System.out.println("Order: " + (int)ORDER_FACTOR*(numberOfDirectionChanges + 3));
+        System.out.println("Number Of Points: " + m_trajectory.getTotalTimeSeconds() / 0.02);
+        return getPolynomialApproximation(xGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), true);
     }
     
     protected PolynomialFunction getPolynomialApproximation(ValueGetter valueGetter, int order, boolean debugMode) {
         final WeightedObservedPoints obs = new WeightedObservedPoints();
-        
-        int count = 0;
-        for(State state : m_states) {
-            obs.add(state.timeSeconds, valueGetter.get(count));
-            count++;
+        for(double time = 0; time < m_trajectory.getTotalTimeSeconds(); time+=0.02) {
+            obs.add(time, valueGetter.get(time));
         }
 
         // Instantiate a third-degree polynomial fitter.
@@ -120,7 +117,7 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
     }
 
     abstract class ValueGetter {
-        public abstract double get(int index);
+        public abstract double get(double time);
     }
 
     protected abstract List<State> generateBetterStates();

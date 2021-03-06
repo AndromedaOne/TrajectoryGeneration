@@ -23,7 +23,6 @@ public abstract class PolynomialApproxSettingEndpoints extends PolynomialCurveAp
 
     public PolynomialApproxSettingEndpoints(List<State> states) {
         super(states);
-        System.out.println("THIS IS WRONG");
     }
 
     @Override

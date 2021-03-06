@@ -13,9 +13,12 @@ import java.util.List;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
+import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint;
 import frc.robot.BetterTrajectoryGenerators.BetterStatesGeneratorFactory;
 import frc.robot.Logging.Logging;
 
@@ -30,6 +33,7 @@ public final class Main {
   private static final String[] pathToOriginalFile = path.split("/");
   private static final String nameOfFile = pathToOriginalFile[pathToOriginalFile.length - 1];
   public static final String dest = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/" + nameOfFile;
+  private static final boolean regenerateTrajectory = true;
 
 
   public static void main(String... args) {
@@ -39,7 +43,11 @@ public final class Main {
     List<State> jsonPathPoints = getPathPoints(jsonArray);
     
     List<State> betterJsonPathPoints = getBetterPathPoints(jsonPathPoints);
-    Trajectory betterTrajectory = new Trajectory(betterJsonPathPoints);
+    Trajectory betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints);
+    if(regenerateTrajectory){
+      TrajectoryConfig trajectoryConfig = getTrajectoryConfig(jsonPathPoints);
+      betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints, trajectoryConfig);
+    }
     
     System.out.println("New Logs!");
     Logging.createCurvaturesCSV("GeneratedCurvatures.csv", jsonPathPoints, betterJsonPathPoints);
@@ -52,6 +60,45 @@ public final class Main {
     
     exportTrajectory(trajectory);
     
+  }
+
+  private static TrajectoryConfig getTrajectoryConfig(List<State> originalStates) {
+    double totalVelocity = 0;
+    for(State state: originalStates) {
+      if(Math.abs(state.velocityMetersPerSecond) > maxVelocity) {
+        maxVelocity = Math.abs(state.velocityMetersPerSecond);
+      }
+      if(Math.abs(state.accelerationMetersPerSecondSq) > maxAcceleration) {
+        maxAcceleration = Math.abs(state.accelerationMetersPerSecondSq);
+      }
+      totalVelocity += state.velocityMetersPerSecond;
+    }
+    TrajectoryConfig trajectoryConfig = new TrajectoryConfig(maxVelocity, maxAcceleration);
+    trajectoryConfig.setEndVelocity(0);
+    trajectoryConfig.setStartVelocity(0);
+    trajectoryConfig.setReversed(totalVelocity < 0);
+    trajectoryConfig.addConstraint(new MyTrajectoryContraint());
+    trajectoryConfig.setKinematics(new DifferentialDriveKinematics(0.6));
+    return trajectoryConfig;
+  }
+
+  private static double maxVelocity = 0;
+  private static double maxAcceleration = 0;
+
+  public static class MyTrajectoryContraint implements TrajectoryConstraint {
+
+    @Override
+    public double getMaxVelocityMetersPerSecond(Pose2d poseMeters, double curvatureRadPerMeter,
+        double velocityMetersPerSecond) {
+      return maxVelocity;
+    }
+
+    @Override
+    public MinMax getMinMaxAccelerationMetersPerSecondSq(Pose2d poseMeters, double curvatureRadPerMeter,
+        double velocityMetersPerSecond) {
+      return new MinMax(-maxAcceleration, maxAcceleration);
+    }
+
   }
 
   private static List<State> getBetterPathPoints(List<State> jsonPathPoints) {

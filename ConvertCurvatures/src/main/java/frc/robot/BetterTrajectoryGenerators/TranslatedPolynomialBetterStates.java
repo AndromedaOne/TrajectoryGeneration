@@ -7,6 +7,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
 import frc.robot.Logging.Logging;
 
@@ -24,6 +25,7 @@ public class TranslatedPolynomialBetterStates extends PolynomialCurveApproximati
         PolynomialFunction yDerivative = m_yApprox.polynomialDerivative();
         PolynomialFunction xSecondDerivative = xDerivative.polynomialDerivative();
         PolynomialFunction ySecondDerivative = yDerivative.polynomialDerivative();
+        
 
         int count = 0;
         double previousCurvature = 0;
