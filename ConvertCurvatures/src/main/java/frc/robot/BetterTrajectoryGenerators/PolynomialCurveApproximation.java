@@ -77,8 +77,6 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
 
         };
         int numberOfDirectionChanges = getNumberOfDirectionChanges(xValues);
-        System.out.println("Order: " + (int)ORDER_FACTOR*(numberOfDirectionChanges + 3));
-        System.out.println("Number Of Points: " + m_trajectory.getTotalTimeSeconds() / 0.02);
         return getPolynomialApproximation(xGetter, (int)ORDER_FACTOR*(numberOfDirectionChanges + 3), true);
     }
     
@@ -88,7 +86,6 @@ public abstract class PolynomialCurveApproximation extends BetterStatesGenerator
             obs.add(time, valueGetter.get(time));
         }
 
-        // Instantiate a third-degree polynomial fitter.
         final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(order);
 
         // Retrieve fitted parameters (coefficients of the polynomial function).
