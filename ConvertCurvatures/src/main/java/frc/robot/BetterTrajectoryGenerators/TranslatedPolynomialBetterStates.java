@@ -50,8 +50,11 @@ public class TranslatedPolynomialBetterStates extends PolynomialCurveApproximati
                 double newX = m_xApprox.value(state.timeSeconds);
                 double newY = m_yApprox.value(state.timeSeconds);
                 double newRotation = Math.atan2(dy,  dx);
+                if(state.velocityMetersPerSecond < 0) {
+                    newRotation += Math.PI;
+                }
                 newPoint = new Pose2d(newX, newY, new Rotation2d(newRotation));
-
+                
                 if(Math.abs(state.curvatureRadPerMeter - previousCurvature) < Math.abs(newCurvature - previousCurvature)) {
                     newCurvature = state.curvatureRadPerMeter;
                     newPoint = state.poseMeters;

@@ -29,37 +29,66 @@ import org.json.simple.parser.JSONParser;
 public final class Main {
   private Main() {
   }
-  public static final String path = "/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json";
-  private static final String[] pathToOriginalFile = path.split("/");
-  private static final String nameOfFile = pathToOriginalFile[pathToOriginalFile.length - 1];
-  public static final String dest = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/" + nameOfFile;
+
+  public static final List<String> paths = new ArrayList<String>();
+  static {
+    /*paths.add("/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/Slalom.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart1.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart2.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart3.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart4.wpilib.json");*/
+    paths.add("/Users/seandoyle/test/PathWeaver/output/PerfectCircle.wpilib.json");
+    
+  }
+  public static final String DESTINATION_DIR = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/";
+
+  private static List<String> getNewDestinations() {
+    List<String[]> originalFiles = new ArrayList<String[]>();
+    for (String path : paths) {
+      originalFiles.add(path.split("/"));
+    }
+    List<String> names = new ArrayList<String>();
+    for(String[] path : originalFiles) {
+      names.add(path[path.length - 1]);
+    }
+    List<String> destinations = new ArrayList<String>();
+    for(String name : names) {
+      destinations.add(DESTINATION_DIR + name);
+    }
+    return destinations;
+  }
+  
+  public static final List<String> dests =  getNewDestinations();
   private static final boolean regenerateTrajectory = true;
 
-
+  
   public static void main(String... args) {
-
-    Trajectory trajectory = createTrajectory();
-    JSONArray jsonArray = getJsonArray();
-    List<State> jsonPathPoints = getPathPoints(jsonArray);
-    
-    List<State> betterJsonPathPoints = getBetterPathPoints(jsonPathPoints);
-    Trajectory betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints);
-    if(regenerateTrajectory){
-      TrajectoryConfig trajectoryConfig = getTrajectoryConfig(jsonPathPoints);
-      betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints, trajectoryConfig);
+    int count = 0;
+    for (String path : paths){
+      Trajectory trajectory = createTrajectory(path);
+      JSONArray jsonArray = getJsonArray(path);
+      List<State> jsonPathPoints = getPathPoints(jsonArray);
+      
+      List<State> betterJsonPathPoints = getBetterPathPoints(jsonPathPoints);
+      Trajectory betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints);
+      if(regenerateTrajectory){
+        TrajectoryConfig trajectoryConfig = getTrajectoryConfig(jsonPathPoints);
+        betterTrajectory = BetterStatesGeneratorFactory.createTrajectory(betterJsonPathPoints, trajectoryConfig);
+      }
+      
+      System.out.println("New Logs!");
+      Logging.createCurvaturesCSV("GeneratedCurvatures.csv", jsonPathPoints, betterJsonPathPoints);
+      Logging.createVelocitiesCSV("GeneratedVelocities.csv", trajectory, betterTrajectory);
+      Logging.createXYCSV("Trajectory.csv", trajectory);
+      Logging.createXYCSV("NewTrajectory.csv", betterTrajectory);
+      Logging.createTimeXYCSV("TimedTrajectory.csv", trajectory);
+      Logging.plotRotation("Rotation.csv", jsonPathPoints);
+      Logging.plotRotation("NewRotation.csv", betterJsonPathPoints);
+      
+      exportTrajectory(betterTrajectory, dests.get(count));
+      count++;
     }
-    
-    System.out.println("New Logs!");
-    Logging.createCurvaturesCSV("GeneratedCurvatures.csv", jsonPathPoints, betterJsonPathPoints);
-    Logging.createVelocitiesCSV("GeneratedVelocities.csv", trajectory, betterTrajectory);
-    Logging.createXYCSV("Trajectory.csv", trajectory);
-    Logging.createXYCSV("NewTrajectory.csv", betterTrajectory);
-    Logging.createTimeXYCSV("TimedTrajectory.csv", trajectory);
-    Logging.plotRotation("Rotation.csv", jsonPathPoints);
-    Logging.plotRotation("NewRotation.csv", betterJsonPathPoints);
-    
-    exportTrajectory(trajectory);
-    
   }
 
   private static TrajectoryConfig getTrajectoryConfig(List<State> originalStates) {
@@ -74,8 +103,8 @@ public final class Main {
       totalVelocity += state.velocityMetersPerSecond;
     }
     TrajectoryConfig trajectoryConfig = new TrajectoryConfig(maxVelocity, maxAcceleration);
-    trajectoryConfig.setEndVelocity(0);
-    trajectoryConfig.setStartVelocity(0);
+    trajectoryConfig.setEndVelocity(0.0);
+    trajectoryConfig.setStartVelocity(0.0);
     trajectoryConfig.setReversed(totalVelocity < 0);
     trajectoryConfig.addConstraint(new MyTrajectoryContraint());
     trajectoryConfig.setKinematics(new DifferentialDriveKinematics(0.6));
@@ -105,7 +134,7 @@ public final class Main {
     return BetterStatesGeneratorFactory.create(jsonPathPoints).getBetterStates();
   }
 
-  public static Trajectory createTrajectory() {
+  public static Trajectory createTrajectory(String path) {
     Trajectory trajectory = null;
     try {
       trajectory = TrajectoryUtil.fromPathweaverJson(Paths.get(path));
@@ -116,7 +145,7 @@ public final class Main {
     return trajectory;
   }
 
-  public static JSONArray getJsonArray() {
+  public static JSONArray getJsonArray(String path) {
     JSONParser parser = new JSONParser();
     JSONArray jsonArray = null;
     try {
@@ -163,7 +192,7 @@ public final class Main {
     return actualDouble;
   }
 
-  public static void exportTrajectory(Trajectory trajectory) {
+  public static void exportTrajectory(Trajectory trajectory, String dest) {
     try {
       TrajectoryUtil.toPathweaverJson(trajectory, Path.of(dest));
     } catch (Exception e) {
