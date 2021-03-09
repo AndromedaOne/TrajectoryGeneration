@@ -30,6 +30,8 @@ public final class Main {
   private Main() {
   }
 
+  public static final double TRACKWIDTH = 0.6;
+
   public static final List<String> paths = new ArrayList<String>();
   static {
     /*paths.add("/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json");
@@ -107,7 +109,7 @@ public final class Main {
     trajectoryConfig.setStartVelocity(0.0);
     trajectoryConfig.setReversed(totalVelocity < 0);
     trajectoryConfig.addConstraint(new MyTrajectoryContraint());
-    trajectoryConfig.setKinematics(new DifferentialDriveKinematics(0.6));
+    trajectoryConfig.setKinematics(new DifferentialDriveKinematics(TRACKWIDTH));
     return trajectoryConfig;
   }
 
