@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.Trajectory.State;
-import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint;
+import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint;  
 import frc.robot.BetterTrajectoryGenerators.BetterStatesGeneratorFactory;
 import frc.robot.Logging.Logging;
 
@@ -40,7 +40,15 @@ public final class Main {
     paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart2.wpilib.json");
     paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart3.wpilib.json");
     paths.add("/Users/seandoyle/test/PathWeaver/output/BouncePart4.wpilib.json");*/
-    paths.add("/Users/seandoyle/test/PathWeaver/output/PerfectCircle.wpilib.json");
+    /*paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathBRed.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathABlue.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathBBlue.wpilib.json");
+    paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathARed.wpilib.json")*/;
+
+    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP1.wpilib.json");
+    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP2.wpilib.json");
+    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP3.wpilib.json");
+    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP4.wpilib.json");
     
   }
   public static final String DESTINATION_DIR = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/";
@@ -66,6 +74,7 @@ public final class Main {
 
   
   public static void main(String... args) {
+    System.out.println("Starting!");
     int count = 0;
     for (String path : paths){
       Trajectory trajectory = createTrajectory(path);
@@ -108,7 +117,7 @@ public final class Main {
     trajectoryConfig.setEndVelocity(0.0);
     trajectoryConfig.setStartVelocity(0.0);
     trajectoryConfig.setReversed(totalVelocity < 0);
-    trajectoryConfig.addConstraint(new MyTrajectoryContraint());
+    trajectoryConfig.addConstraint(new MyTrajectoryContraint());  
     trajectoryConfig.setKinematics(new DifferentialDriveKinematics(TRACKWIDTH));
     return trajectoryConfig;
   }
