@@ -28,10 +28,15 @@ import org.json.simple.parser.JSONParser;
 
 public final class Main {
   private Main() {
+    start();
   }
-
-  public static final double TRACKWIDTH = 0.6;
-
+  
+  // CHECK THESE VARIABLES BEFORE RUNNING ON YOUR COMPUTER
+  public static final double TRACKWIDTH = 0.142072613;
+  public static final String INITIAL_DIR = "/Users/seandoyle/git/2020Code/pathweaverprojects/romi/Pathweaver/output/";
+  public static final String DESTINATION_DIR = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/";
+  
+  
   public static final List<String> paths = new ArrayList<String>();
   static {
     /*paths.add("/Users/seandoyle/test/PathWeaver/output/BarrelLessPoints.wpilib.json");
@@ -45,13 +50,13 @@ public final class Main {
     paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathBBlue.wpilib.json");
     paths.add("/Users/seandoyle/test/PathWeaver/output/GalacticSearchPathARed.wpilib.json")*/;
 
-    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP1.wpilib.json");
-    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP2.wpilib.json");
-    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP3.wpilib.json");
-    paths.add("/Users/seandoyle/test/Romi/PathWeaver/output/RomiBounceP4.wpilib.json");
+    paths.add(INITIAL_DIR + "RomiBounceP1.wpilib.json");
+    paths.add(INITIAL_DIR + "RomiBounceP2.wpilib.json");
+    paths.add(INITIAL_DIR + "RomiBounceP3.wpilib.json");
+    paths.add(INITIAL_DIR + "RomiBounceP4.wpilib.json");
     
   }
-  public static final String DESTINATION_DIR = "/Users/seandoyle/git/2020Code/src/main/deploy/paths/";
+  
 
   private static List<String> getNewDestinations() {
     List<String[]> originalFiles = new ArrayList<String[]>();
@@ -74,8 +79,13 @@ public final class Main {
 
   
   public static void main(String... args) {
+    
+  }
+
+  private void start() {
     System.out.println("Starting!");
     int count = 0;
+
     for (String path : paths){
       Trajectory trajectory = createTrajectory(path);
       JSONArray jsonArray = getJsonArray(path);
