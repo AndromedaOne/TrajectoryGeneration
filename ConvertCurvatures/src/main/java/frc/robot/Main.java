@@ -28,7 +28,6 @@ import org.json.simple.parser.JSONParser;
 
 public final class Main {
   private Main() {
-    start();
   }
   
   // CHECK THESE VARIABLES BEFORE RUNNING ON YOUR COMPUTER
@@ -52,8 +51,9 @@ public final class Main {
 
     paths.add(INITIAL_DIR + "RomiBounceP1.wpilib.json");
     paths.add(INITIAL_DIR + "RomiBounceP2.wpilib.json");
-    paths.add(INITIAL_DIR + "RomiBounceP3.wpilib.json");
     paths.add(INITIAL_DIR + "RomiBounceP4.wpilib.json");
+    paths.add(INITIAL_DIR + "RomiBounceP3.wpilib.json");
+    paths.add(INITIAL_DIR + "StraitLine.wpilib.json");
     
   }
   
@@ -77,12 +77,8 @@ public final class Main {
   public static final List<String> dests =  getNewDestinations();
   private static final boolean regenerateTrajectory = true;
 
-  
+  // java -cp build/libs/ConvertCurvatures.jar frc.robot.Main
   public static void main(String... args) {
-    
-  }
-
-  private void start() {
     System.out.println("Starting!");
     int count = 0;
 
